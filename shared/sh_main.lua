@@ -1,34 +1,39 @@
 Config = {}
-QBCore = exports['qb-core']:GetCoreObject()
+
+-- REMOVED: QBCore = exports['qb-core']:GetCoreObject()
 
 -- Item that players get when they buy tokens and use to pay for a game.
 Config.TokenItem = "gametoken"
 Config.TokenPrice = "5"
 Config.PaymentType = "cash" -- cash, bank, crypto
 
--- Arcade coin shop points
+-- ============================================================================
+--  INTERNAL SERVICE COUNTER (Your Exact Stand Position)
+-- ============================================================================
 Config.Zones = {
-    vector3(-1290.31, -298.4, 36.05),
-    vector3(-1291.52, -300.7, 36.05)
+    vector3(2730.35, -383.2, -50.015) -- The interactive spot right at his desk
 }
 
--- Arcade coin shop NPC's
+-- ============================================================================
+--  THE SINGLE INTERIOR TICKETEER (Jimmy's Permanent Office Workstation)
+-- ============================================================================
 Config.shops = {
     {
         model = 'ig_jimmydisanto',
-        coords = vector4(-1292.98, -301.59, 35.05, 300.74),
+        coords = vector4(2730.35, -383.2, -50.015, 320.48), -- Your exact internal coordinates
         scenario = 'WORLD_HUMAN_CLIPBOARD',
         icon = 'fas fa-cart-shopping'
     }
 }
 
-Config.blip = {
-    coords = vector3(-1286.24, -302.04, 36.03),
-    label = "Arcade",
-    sprite = 484,
-    color = 0,
-    scale = 0.7,
-    display = 2,
+-- Plural blips array ready to feed your cl_blip.lua loop
+Config.blips = {
+    { coords = vector3(-1269.94, -305.26, 36.99), label = "Insert Coin Arcade", sprite = 484, color = 0, scale = 0.7, display = 2 },
+    { coords = vector3(1695.75, 4785.15, 42.00),  label = "Wonderama Arcade",    sprite = 484, color = 0, scale = 0.7, display = 2 },
+    { coords = vector3(759.10, -816.10, 26.30),   label = "Videogeddon Arcade",   sprite = 484, color = 0, scale = 0.7, display = 2 },
+    { coords = vector3(-600.82, 279.41, 82.04),   label = "Eight-Bit Arcade",     sprite = 484, color = 0, scale = 0.7, display = 2 },
+    { coords = vector3(-116.39, -1772.22, 29.86), label = "Warehouse Arcade",     sprite = 484, color = 0, scale = 0.7, display = 2 },
+    { coords = vector3(-247.50, 6213.11, 31.94),  label = "Pixel Pete's Arcade",  sprite = 484, color = 0, scale = 0.7, display = 2 }
 }
 
 Config.games = {
@@ -81,9 +86,19 @@ Config.hacks = {
         action = function()
             exports['ps-ui']:Circle(function(success)
                 if success then
-                    QBCore.Functions.Notify("You opened the lock", "success")
+                    -- CHANGED: Replaced QBCore notification with pure ox_lib notification export
+                    lib.notify({
+                        title = 'Lockpick',
+                        description = 'You opened the lock',
+                        type = 'success'
+                    })
                 else
-                    QBCore.Functions.Notify("You closed the lock", "error")
+                    -- CHANGED: Replaced QBCore notification with pure ox_lib notification export
+                    lib.notify({
+                        title = 'Lockpick',
+                        description = 'You closed the lock',
+                        type = 'error'
+                    })
                 end
             end, 2, 20) -- NumberOfCircles, MS
         end

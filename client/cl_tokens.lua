@@ -1,20 +1,19 @@
 local pedEntities = {}
 
-local function Nearby()
-    if IsControlJustPressed(0, 38) then
-        lib.showContext('arcade_purchase_token')
-        return
-    end
-end
+-- ============================================================================
+-- FIXED INTERIOR TICKETEER ENGINE (Bypassed Locale Layer to Prevent Boot Crash)
+-- ============================================================================
 
+-- 1. Self-Contained Text Prompt & Keybind Point Loop
 CreateThread(function()
     for _, v in ipairs(Config.Zones) do
         lib.points.new({
             coords = v,
-            distance = 3,
+            distance = 3.0, 
 
             onEnter = function()
-                lib.showTextUI(Lang:t('interactions.enter_token_shop'), {
+                -- FIXED: Hardcoded clean plain-text string directly to guarantee boot execution
+                lib.showTextUI('[E] Purchase Game Token', {
                     position = "left-center",
                     icon = 'e'
                 })
@@ -24,21 +23,27 @@ CreateThread(function()
                 lib.hideTextUI()
             end,
 
-            nearby = Nearby
+            nearby = function(self)
+                if IsControlJustReleased(0, 38) then -- 'E' Key
+                    lib.hideTextUI()
+                    lib.showContext('arcade_purchase_token')
+                end
+            end
         })
     end
 end)
 
+-- 2. NPC Generation & Third-Eye Attachment Loop
 CreateThread(function()
     for i, v in ipairs(Config.shops) do
         lib.points.new({
-            coords = v.coords,
-            distance = 25,
+            coords = vec3(v.coords.x, v.coords.y, v.coords.z),
+            distance = 25.0,
 
             onEnter = function()
-                -- spawn npc here
                 local model = joaat(v.model)
                 lib.requestModel(model)
+                
                 local ped = CreatePed(4, model, v.coords.x, v.coords.y, v.coords.z, false, false, false)
                 SetEntityHeading(ped, v.coords.w)
                 FreezeEntityPosition(ped, true)
@@ -52,21 +57,25 @@ CreateThread(function()
                 end
                 pedEntities[i] = ped
 
-                exports['qb-target']:AddTargetEntity(ped, {
-                    options = {
-                        {
-                            label = Lang:t('interactions.enter_token_shop'),
-                            icon = v.icon,
-                            action = function()
-                                lib.showContext('arcade_purchase_token')
-                            end
-                        }
+                -- FIXED: Hardcoded plain-text label string directly into ox_target export
+                exports.ox_target:addLocalEntity(ped, {
+                    {
+                        name = 'arcade_token_ped_' .. i,
+                        icon = v.icon or 'fas fa-cart-shopping',
+                        label = 'Purchase Game Tokens',
+                        distance = 2.0,
+                        onSelect = function()
+                            lib.showContext('arcade_purchase_token')
+                        end
                     }
                 })
             end,
 
             onExit = function()
-                DeleteEntity(pedEntities[i])
+                if DoesEntityExist(pedEntities[i]) then
+                    exports.ox_target:removeLocalEntity(pedEntities[i], 'arcade_token_ped_' .. i)
+                    DeleteEntity(pedEntities[i])
+                end
             end,
         })
     end
